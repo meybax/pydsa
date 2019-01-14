@@ -16,14 +16,16 @@ class Node():
 
 class BST():
     """
-    red-black bst
+    red-black bst with comparable values
     """
 
     def __init__(self):
         self.head = None
 
-    def insert(self, node):
+    def insert(self, val):
+
         # find initial insert position
+        node = Node(val)
         curr = self.head
         while curr.left and curr.right:
             if node.val < curr.val:
