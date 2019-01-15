@@ -34,7 +34,7 @@ class BST():
             curr.parent.setleft(new_root)
         else:
             curr.parent.setright(new_root)
-        new_root.setleft(curr)
+        new_root.setright(curr)
 
     def rotateleft(self, curr):
         new_root = curr.right
@@ -49,7 +49,6 @@ class BST():
         new_root.setleft(curr)
 
     def insert(self, val):
-
         # find initial insert position
         node = Node(val)
         curr = self.head
