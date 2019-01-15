@@ -1,10 +1,10 @@
 class Node():
-    def __init__(self, val):
+    def __init__(self, val, left=None, right=None, parent=None, __isred=True):
         self.val = val
-        self.left = None
-        self.right = None
-        self.parent = None
-        self.__red = True
+        self.left = left
+        self.right = right
+        self.parent = parent
+        self.__red = __isred
 
     def setright(self, node):
         if node:
@@ -68,47 +68,35 @@ class BST():
 
             # on left of grandparent
             if curr.parent == curr.parent.parent.left:
+                uncle = curr.parent.parent.right
+                onLeft = True
+                rotate = self.rotateright()
+            # on right of grandparent
+            else:
+                uncle = curr.parent.parent.left
+                onLeft = False
+                rotate = self.rotateleft()
 
-                # uncle is red, case 1
-                if curr.parent.parent.right.__red:
-                    uncle = curr.parent.parent.right
-                    curr.parent.__red = False
-                    uncle.__red = False
-                    curr.parent.parent.__red = True
-                    curr = curr.parent.parent
-
-                # on right of parent, case 2
-                elif curr == curr.parent.right:
-                    curr = curr.parent
-                    self.rotateleft(curr)
-
-                # case 3
+            # uncle is red, case 1
+            if uncle.__red:
                 curr.parent.__red = False
+                uncle.__red = False
                 curr.parent.parent.__red = True
                 curr = curr.parent.parent
+
+            # on right/left of parent, case 2
+            elif curr == curr.parent.right and onLeft:
+                curr = curr.parent
+                self.rotateleft(curr)
+            elif curr == curr.parent.left and not onLeft:
+                curr = curr.parent
                 self.rotateright(curr)
 
-            # on right of grandparent (reflection)
-            else:
-
-                # uncle is red, case 1
-                if curr.parent.parent.left.__red:
-                    uncle = curr.parent.parent.left
-                    curr.parent.__red = False
-                    uncle.__red = False
-                    curr.parent.parent.__red = True
-                    curr = curr.parent.parent
-
-                # on left of parent, case 2
-                elif curr == curr.parent.left:
-                    curr = curr.parent
-                    self.rotateright(curr)
-
-                # case 3
-                curr.parent.__red = False
-                curr.parent.parent.__red = True
-                curr = curr.parent.parent
-                self.rotateleft(curr)
+            # case 3
+            curr.parent.__red = False
+            curr.parent.parent.__red = True
+            curr = curr.parent.parent
+            rotate(curr)
 
         # after inserting root or color violation reaching the top
         self.head.__red = False
