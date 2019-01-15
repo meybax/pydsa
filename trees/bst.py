@@ -18,7 +18,7 @@ class Node():
 
 class BST():
     """
-    red-black bst
+    red-black bst with comparable values
     """
 
     def __init__(self):
@@ -48,8 +48,10 @@ class BST():
             curr.parent.setright(new_root)
         new_root.setleft(curr)
 
-    def insert(self, node):
+    def insert(self, val):
+
         # find initial insert position
+        node = Node(val)
         curr = self.head
         while curr.left and curr.right:
             if node.val < curr.val:
