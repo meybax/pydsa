@@ -16,42 +16,59 @@ class Node():
             node.parent = self
         self.left = node
 
+def copy_helper(source):
+    if source is None:
+        return None
+    dest = Node(source.val, _Node__isred=source._Node__red)
+    dest.setleft(copy_helper(source.left))
+    dest.setright(copy_helper(source.right))
+    return dest
+
 class BST():
     """
     red-black bst with comparable values
     """
 
     def __init__(self):
-        self.head = None
+        self.root = None
+        self.size = 0
 
     def rotateright(self, curr):
         new_root = curr.left
         curr.setleft(new_root.right)
         if not curr.parent:
-            self.head = new_root
+            self.root = new_root
             new_root.parent = None
         elif curr == curr.parent.left:
             curr.parent.setleft(new_root)
         else:
             curr.parent.setright(new_root)
         new_root.setright(curr)
+        return new_root
 
     def rotateleft(self, curr):
         new_root = curr.right
         curr.setright(new_root.left)
         if not curr.parent:
-            self.head = new_root
+            self.root = new_root
             new_root.parent = None
         elif curr == curr.parent.left:
             curr.parent.setleft(new_root)
         else:
             curr.parent.setright(new_root)
         new_root.setleft(curr)
+        return new_root
 
     def insert(self, val):
+        self.size += 1
         # find initial insert position
         node = Node(val)
-        curr = self.head
+        if self.root is None:
+            node.__isred = False
+            self.root = node
+            return
+
+        curr = self.root
         while curr.left and curr.right:
             if node.val < curr.val:
                 curr = curr.left
@@ -64,39 +81,62 @@ class BST():
 
         curr = node
         # RB correction
-        while curr.parent.__red:
-
+        while curr.parent and curr.parent.parent and curr.parent._Node__red:
             # on left of grandparent
             if curr.parent == curr.parent.parent.left:
                 uncle = curr.parent.parent.right
                 onLeft = True
-                rotate = self.rotateright()
+                rotate = self.rotateright
             # on right of grandparent
             else:
                 uncle = curr.parent.parent.left
                 onLeft = False
-                rotate = self.rotateleft()
+                rotate = self.rotateleft
 
             # uncle is red, case 1
-            if uncle.__red:
-                curr.parent.__red = False
-                uncle.__red = False
-                curr.parent.parent.__red = True
+            if uncle._Node__red:
+                curr.parent._Node__red = False
+                uncle._Node__red = False
+                curr.parent.parent._Node__red = True
                 curr = curr.parent.parent
+            else:
+                # on right/left of parent, case 2
+                if curr == curr.parent.right and onLeft:
+                    curr = self.rotateleft(curr.parent).left
+                elif curr == curr.parent.left and not onLeft:
+                    curr = self.rotateright(curr.parent).right
 
-            # on right/left of parent, case 2
-            elif curr == curr.parent.right and onLeft:
-                curr = curr.parent
-                self.rotateleft(curr)
-            elif curr == curr.parent.left and not onLeft:
-                curr = curr.parent
-                self.rotateright(curr)
+                # case 3
+                curr.parent._Node__red = False
+                curr.parent.parent._Node__red = True
+                curr = curr.parent.parent
+                curr = rotate(curr)
+                break
 
-            # case 3
-            curr.parent.__red = False
-            curr.parent.parent.__red = True
-            curr = curr.parent.parent
-            rotate(curr)
+        # after inserting root or color violation reaching root
+        self.root._Node__red = False
 
-        # after inserting root or color violation reaching the top
-        self.head.__red = False
+    def insert_no_rebalance(self, val):
+        node = Node(val)
+        if self.root is None:
+            node.__isred = False
+            self.root = node
+            return
+
+        curr = self.root
+        while curr.left and curr.right:
+            if node.val < curr.val:
+                curr = curr.left
+            else:
+                curr = curr.right
+        if node.val < curr.val:
+            curr.setleft(node)
+        else:
+            curr.setright(node)
+
+    def copy(self):
+        new_tree = BST()
+        new_root = copy_helper(self.root)
+        new_tree.root = new_root
+        new_tree.size = self.size
+        return new_tree
