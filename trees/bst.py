@@ -120,6 +120,7 @@ class BST():
         # standard BTS delete, keeping track of color of deleted and replacement Node
         del_isRed = node._Node__red
         curr = node
+        # case with no children
         if not curr.left and not curr.right:
             replace = None
             if curr == curr.parent.right:
@@ -127,11 +128,13 @@ class BST():
             else:
                 curr.parent.left = None
             curr = curr.parent
+        # case with 1 child
         elif not curr.left or not curr.right:
             replace = curr.right or curr.left
             curr.val = replace.val
             curr.left = replace.left
             curr.right = replace.right
+        # case with 2 children
         else:
             replace = curr.right
             while replace.left:
@@ -142,9 +145,51 @@ class BST():
         # simple case
         if del_isRed or replace._Node__red:
             curr._Node__red == False
+        # both delete and replace are black
         else:
-            # ...
-            pass
+            while curr != self.root:
+                sibling = curr.parent.left if curr == curr.parent.right else curr.parent.right
+                # case where sibling has red child
+                if not sibling._Node__red and (sibling.left._Node__red or sibling.right._Node__red):
+                    niece = sibling.left if sibling.left._Node__red else sibling.right
+                    if sibling == curr.parent.left:
+                        # left left
+                        if niece == sibling.left:
+                            self.rotateright(curr.parent)
+                        # left right
+                        else:
+                            niece._Node__red = False
+                            sibling = self.rotateleft(sibling)
+                            self.rotateright(sibling.parent)
+                    else:
+                        # right right
+                        if niece == sibling.right:
+                            self.rotateleft(curr.parent)
+                        # right left
+                        else:
+                            niece._Node__red = False
+                            sibling = self.rotateright(sibling)
+                            self.rotateleft(sibling.parent)
+                    break
+                # sibling and children are black
+                elif not sibling._Node__red:
+                    sibling._Node__red = True
+                    curr = curr.parent
+                # sibling is red
+                else:
+                    sibling._Node__red = False
+                    # right case
+                    if sibling == sibling.parent.right:
+                        sibling.left._Node__red = True
+                        self.rotateleft(curr.parent)
+                    # left case
+                    else:
+                        sibling.right._Node__red = True
+                        self.rotateright(curr.parent)
+                    break
+            else:
+                self.root._Node__red = False
+        return self.root
 
     def insert_no_rebalance(self, val):
         node = Node(val)
