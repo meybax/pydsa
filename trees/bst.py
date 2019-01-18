@@ -1,3 +1,7 @@
+from lists.queue import Queue
+from collections import namedtuple
+from sty import fg
+
 class Node():
     def __init__(self, val, left=None, right=None, parent=None, __isred=True):
         self.val = val
@@ -16,21 +20,15 @@ class Node():
             node.parent = self
         self.left = node
 
-def copy_helper(source):
-    if source is None:
-        return None
-    dest = Node(source.val, _Node__isred=source._Node__red)
-    dest.setleft(copy_helper(source.left))
-    dest.setright(copy_helper(source.right))
-    return dest
+
 
 class BST():
     """
     red-black bst with comparable values
     """
 
-    def __init__(self):
-        self.root = None
+    def __init__(self, node=None):
+        self.root = node
         self.size = 0
 
     def rotateright(self, curr):
@@ -215,3 +213,94 @@ class BST():
         new_tree.root = new_root
         new_tree.size = self.size
         return new_tree
+
+    def visualize(self):
+        ldict = level_order_dict(self.root)
+        levels = sorted(ldict.keys())[-1] + 1
+        currs = 1
+        spaces_betw = [currs]
+        for _ in range(levels - 1):
+            currs *= 2
+            currs += 1
+            spaces_betw.append(currs)
+        spaces_betw = list(reversed(spaces_betw))
+        spaces_betw.append(0)
+
+        for l in range(levels):
+            print(' ' * (spaces_betw[l + 1]), end='')
+            curr_level = ldict[l]
+            for node in curr_level:
+                if not node:
+                    p = ' '
+                elif node._Node__red:
+                    p = fg.red + str(node.val) + fg.rs
+                else:
+                    p = str(node.val)
+                print(p, end=' ' * spaces_betw[l])
+            print()
+
+def level_order_dict(root):
+    level = 0
+    q = Queue()
+    LevelNode = namedtuple('LevelNode', ['node', 'level'])
+    q.enqueue(LevelNode(root, level))
+    ldict = {0:[]}
+    all_null = True
+    while q:
+        curr = q.dequeue()
+        if curr.level != level:
+            if all_null:
+                del ldict[level]
+                break
+            all_null = True
+            level = curr.level
+            ldict[level] = [curr.node]
+        else:
+            ldict[level].append(curr.node)
+
+        if curr.node is None:
+            left = None
+            right = None
+        else:
+            all_null = False
+            left = curr.node.left
+            right = curr.node.right
+        q.enqueue(LevelNode(left, level + 1))
+        q.enqueue(LevelNode(right, level + 1))
+
+    return ldict
+
+def rb_bst_from_level_order(level_ord):
+    """
+    :return:
+    """
+    level_ord = level_ord.split()
+    val, color = level_ord[0].split('.')
+    level_ord[0] = Node(val, _Node__isred=color=='R')
+
+    for i in range(len(level_ord)):
+        curr = level_ord[i]
+        i = i + 1
+        if curr is not None and type(curr) != str:
+            li = (i * 2) - 1
+            ri = (i * 2)
+            if li < len(level_ord) and level_ord[li] != 'null':
+                left_val, left_color = level_ord[li].split('.')
+                curr.setleft(Node(left_val, _Node__isred=left_color=="R"))
+                level_ord[li] = curr.left
+            if ri < len(level_ord)  and level_ord[ri] != 'null':
+                right_val, right_color = level_ord[ri].split('.')
+                curr.setright(Node(right_val, _Node__isred=right_color=="R"))
+                level_ord[ri] = curr.right
+    return level_ord[0]
+
+def copy_helper(source):
+    if source is None:
+        return None
+    dest = Node(source.val, _Node__isred=source._Node__red)
+    dest.setleft(copy_helper(source.left))
+    dest.setright(copy_helper(source.right))
+    return dest
+
+bst = BST(rb_bst_from_level_order('1.B 2.B 3.B null 5.R 6.B null null null 7.B'))
+bst.visualize()
