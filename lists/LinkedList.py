@@ -32,4 +32,3 @@ def print_list(node):
         print(node.data, end=' ')
         node = node.next
     print()
-    
