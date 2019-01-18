@@ -116,6 +116,36 @@ class BST():
         # after inserting root or color violation reaching root
         self.root._Node__red = False
 
+    def delete(self, node):
+        # standard BTS delete, keeping track of color of deleted and replacement Node
+        del_isRed = node._Node__red
+        curr = node
+        if not curr.left and not curr.right:
+            replace = None
+            if curr == curr.parent.right:
+                curr.parent.right = None
+            else:
+                curr.parent.left = None
+            curr = curr.parent
+        elif not curr.left or not curr.right:
+            replace = curr.right or curr.left
+            curr.val = replace.val
+            curr.left = replace.left
+            curr.right = replace.right
+        else:
+            replace = curr.right
+            while replace.left:
+                replace = replace.left
+            Node.val = replace.val
+            self.delete(replace)
+
+        # simple case
+        if del_isRed or replace._Node__red:
+            curr._Node__red == False
+        else:
+            # ...
+            pass
+
     def insert_no_rebalance(self, val):
         node = Node(val)
         if self.root is None:
